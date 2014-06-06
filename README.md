@@ -4,13 +4,15 @@ Extends delayed\_job to support recurring jobs.
 
 ## Usage
 
-In your Gemfile:
+Add it to your Gemfile:
 
 ```ruby
 gem 'delayed_job_recurring'
 ```
 
-Then define a task class:
+Then define a task class.  We like the concept of
+[interactors](http://eng.joingrouper.com/blog/2014/03/03/rails-the-missing-parts-interactors),
+so we put our task classes in `app/interactors`.  You could also put them in `lib` or even `app/models`.
 
 ```ruby
 class MyTask
