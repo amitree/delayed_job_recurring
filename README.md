@@ -43,3 +43,7 @@ MyTask.schedule(run_at: DateTime.parse('2014-03-08 11:00:00 PST'))
 ```ruby
 MyTask.schedule(run_every: 1.day, run_at: [DateTime.parse('2014-03-08 11:00:00 PST'), DateTime.parse('2014-03-08 18:00:00 PST')]
 ```
+
+## Thanks!
+
+Many thanks to @ginjo and @kares for their work!  This code was derived from https://gist.github.com/ginjo/3688965.
