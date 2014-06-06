@@ -4,15 +4,30 @@ Extends delayed\_job to support recurring jobs.
 
 ## Usage
 
+In your Gemfile:
+
+```ruby
+gem 'delayed_job_recurring'
+```
+
+Then define a task class:
+
 ```ruby
 class MyTask
   include Delayed::RecurringJob
   run_every 1.day
   run_at DateTime.parse('2014-03-08 11:00:00 PST')
   timezone 'US/Pacific'
+  def perform
+    # Do some work here!
+  end
 end
+```
 
-MyTask.schedule # will run every day at 11am Pacific time (accounting for daylight savings)
+And schedule it. In a rails app, you might put this in an initializer:
+
+```ruby
+MyTask.schedule # run every day at 11am Pacific time (accounting for daylight savings)
 ```
 
 ## Advanced usage
