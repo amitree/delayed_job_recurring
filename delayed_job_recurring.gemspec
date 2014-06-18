@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'delayed_job_recurring'
-  s.version     = '0.2'
+  s.version     = '0.3'
   s.date        = Date.today.to_s
   s.summary     = "Recurring jobs for delayed_job"
   s.description = "Extends delayed_job to support recurring jobs, including timezone support"

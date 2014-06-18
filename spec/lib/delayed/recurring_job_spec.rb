@@ -46,6 +46,10 @@ end
 class MyTask2 < MyTask
 end
 
+class MyTaskWithPriority < MyTask
+  priority 2
+end
+
 describe Delayed::RecurringJob do
   describe '#schedule' do
     context "when delayed job are disabled" do
@@ -205,6 +209,18 @@ describe Delayed::RecurringJob do
     end
   end
 
+  describe '#schedule!' do
+    it 'reschedules the job' do
+      at '2014-03-08T01:00:00' do
+        MyTask.schedule!(run_at: '3:00am', timezone: 'UTC')
+        MyTask.schedule!(run_at: '2:00am', timezone: 'UTC')
+      end
+      jobs = Delayed::Job.all
+      expect(jobs.count).to eq 1
+      expect(jobs.first.run_at.to_datetime).to eq dt('2014-03-08T02:00:00')
+    end
+  end
+
   describe 'run_at' do
     it 'allows a single value' do
       MyTask1.run_at '1:00'
@@ -213,6 +229,22 @@ describe Delayed::RecurringJob do
     it 'allows multiple values' do
       MyTask2.run_at '1:00', '2:00'
       expect(MyTask2.run_at).to eq ['1:00', '2:00']
+    end
+  end
+
+  describe 'priority' do
+    it 'can be set in the class' do
+      MyTaskWithPriority.schedule!
+      jobs = Delayed::Job.all
+      expect(jobs.count).to eq 1
+      expect(jobs.first.priority).to eq 2
+    end
+
+    it 'can be set in options' do
+      MyTaskWithPriority.schedule!(priority: 3)
+      jobs = Delayed::Job.all
+      expect(jobs.count).to eq 1
+      expect(jobs.first.priority).to eq 3
     end
   end
 

@@ -26,10 +26,11 @@ module Delayed
       @schedule_options = options.reverse_merge(@schedule_options || {}).reverse_merge(
         run_at: self.class.run_at,
         timezone: self.class.timezone,
-        run_interval: serialize_duration(self.class.run_every)
+        run_interval: serialize_duration(self.class.run_every),
+        priority: self.class.priority
       )
 
-      enqueue_opts = { priority: 0, run_at: next_run_time }
+      enqueue_opts = { priority: @schedule_options[:priority], run_at: next_run_time }
 
       if Gem.loaded_specs['delayed_job'].version.to_s.first.to_i < 3
         Delayed::Job.enqueue self, enqueue_opts[:priority], enqueue_opts[:run_at]
@@ -124,6 +125,14 @@ module Delayed
         end
       end
 
+      def priority(priority = nil)
+        if priority.nil?
+          @priority
+        else
+          @priority = priority
+        end
+      end
+
       # Show all jobs for this schedule
       def jobs
         ::Delayed::Job.where("(handler LIKE ?) OR (handler LIKE ?)", "--- !ruby/object:#{name} %", "--- !ruby/object:#{name}\n%")
@@ -141,6 +150,7 @@ module Delayed
       end
 
       def schedule!(options = {})
+        unschedule
         new.schedule!(options)
       end
 
