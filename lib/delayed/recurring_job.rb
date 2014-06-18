@@ -146,10 +146,11 @@ module Delayed
       # Main interface to start this schedule (adds it to the jobs table).
       # Pass in a time to run the first job (nil runs the first job at run_interval from now).
       def schedule(options = {})
-        schedule!(options) if Delayed::Worker.delay_jobs && !scheduled?
+        schedule!(options) unless scheduled?
       end
 
       def schedule!(options = {})
+        return unless Delayed::Worker.delay_jobs
         unschedule
         new.schedule!(options)
       end
