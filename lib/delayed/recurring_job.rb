@@ -41,6 +41,7 @@ module Delayed
     def next_run_time
       times = @schedule_options[:run_at]
       times = [times] unless times.is_a? Array
+      times = times.map{|time| parse_time(time, @schedule_options[:timezone])}
       times = times.map{|time| time.in_time_zone @schedule_options[:timezone]} if @schedule_options[:timezone]
 
       interval = deserialize_duration(@schedule_options[:run_interval])
@@ -76,16 +77,34 @@ module Delayed
       end
     end
 
+    def parse_time(time, timezone)
+      case time
+      when String
+        get_timezone(timezone).parse(time)
+      else
+        time
+      end
+    end
+
+    def get_timezone(zone)
+      if zone
+        ActiveSupport::TimeZone.new(zone)
+      else
+        Time.zone
+      end
+    end
+
     def next_future_time(times)
       times.select{|time| time > Time.now}.min
     end
 
     module ClassMethods
-      def run_at(time = nil)
-        if time.nil?
+      def run_at(*times)
+        if times.length == 0
           @run_at || run_every.from_now
         else
-          @run_at = time
+          @run_at ||= []
+          @run_at.concat times
         end
       end
 

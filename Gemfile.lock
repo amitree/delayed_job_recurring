@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    delayed_job_recurring (0.1)
+    delayed_job_recurring (0.2)
       delayed_job (>= 4.0)
       delayed_job_active_record (>= 4.0)
 

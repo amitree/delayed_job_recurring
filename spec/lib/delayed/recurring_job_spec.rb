@@ -40,6 +40,12 @@ module MyModule
   end
 end
 
+class MyTask1 < MyTask
+end
+
+class MyTask2 < MyTask
+end
+
 describe Delayed::RecurringJob do
   describe '#schedule' do
     context "when delayed job are disabled" do
@@ -132,6 +138,12 @@ describe Delayed::RecurringJob do
             expect(job.run_at.to_datetime).to eq dt('2014-03-09T12:00:00')
           end
         end
+        it "can parse time from a string" do
+          at '2014-03-09T04:01:00' do
+            job = MyTask.schedule(run_at: ['8:00pm', '5:00am'], timezone: 'US/Pacific')
+            expect(job.run_at.to_datetime).to eq dt('2014-03-09T12:00:00')
+          end
+        end
       end
 
       context "on second execution" do
@@ -190,6 +202,17 @@ describe Delayed::RecurringJob do
           expect(job.run_at.to_datetime).to eq dt('2014-03-08T12:00:06') # delayed_job reschedules the job for (N**4 + 5) seconds in the future, N=1
         end
       end
+    end
+  end
+
+  describe 'run_at' do
+    it 'allows a single value' do
+      MyTask1.run_at '1:00'
+      expect(MyTask1.run_at).to eq ['1:00']
+    end
+    it 'allows multiple values' do
+      MyTask2.run_at '1:00', '2:00'
+      expect(MyTask2.run_at).to eq ['1:00', '2:00']
     end
   end
 
