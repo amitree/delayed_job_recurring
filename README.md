@@ -18,7 +18,7 @@ so we put our task classes in `app/interactors`.  You could also put them in `li
 class MyTask
   include Delayed::RecurringJob
   run_every 1.day
-  run_at DateTime.parse('2014-03-08 11:00:00 PST')
+  run_at '11:00am'
   timezone 'US/Pacific'
   def perform
     # Do some work here!
@@ -29,7 +29,7 @@ end
 And schedule it. In a rails app, you might put this in an initializer:
 
 ```ruby
-MyTask.schedule # run every day at 11am Pacific time (accounting for daylight savings)
+MyTask.schedule! # run every day at 11am Pacific time (accounting for daylight savings)
 ```
 
 ## Advanced usage
@@ -37,13 +37,19 @@ MyTask.schedule # run every day at 11am Pacific time (accounting for daylight sa
 ### Passing options to schedule
 
 ```ruby
-MyTask.schedule(run_at: DateTime.parse('2014-03-08 11:00:00 PST'))
+MyTask.schedule(run_at: '12:00')
 ```
 
 ### Running at multiples times each day
 
 ```ruby
-MyTask.schedule(run_every: 1.day, run_at: [DateTime.parse('2014-03-08 11:00:00 PST'), DateTime.parse('2014-03-08 18:00:00 PST')]
+MyTask.schedule(run_every: 1.day, run_at: ['11:00', '6:00pm']
+```
+
+### Running on specific days of the week
+
+```ruby
+MyTask.schedule(run_every: 1.week, run_at: ['sunday 8:00am', 'wednesday 8:00am'])
 ```
 
 ## Thanks!

@@ -40,11 +40,8 @@ module MyModule
   end
 end
 
-class MyTask1 < MyTask
-end
-
-class MyTask2 < MyTask
-end
+class MyTask1 < MyTask; end
+class MyTask2 < MyTask; end
 
 class MyTaskWithPriority < MyTask
   priority 2
@@ -99,6 +96,13 @@ describe Delayed::RecurringJob do
             job = MyTaskWithZone.schedule(run_at: dt('2014-03-08T11:00:00'))
             expect(job.run_at.to_datetime).to eq dt('2014-03-09T10:00:00')
           end         
+        end
+
+        it 'can accept days of the week' do
+          at '2014-06-30T07:00:00' do
+            job = MyTask.schedule run_at: 'sunday 8:00am', timezone: 'US/Pacific', run_every: 1.week
+            expect(job.run_at.to_datetime).to eq dt('2014-07-06T15:00:00')
+          end
         end
       end
 

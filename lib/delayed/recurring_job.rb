@@ -23,6 +23,12 @@ module Delayed
 
     # Schedule this "repeating" job
     def schedule! options = {}
+      options = options.dup
+
+      if run_every = options.delete(:run_every)
+        options[:run_interval] = serialize_duration(run_every)
+      end
+
       @schedule_options = options.reverse_merge(@schedule_options || {}).reverse_merge(
         run_at: self.class.run_at,
         timezone: self.class.timezone,
@@ -81,7 +87,10 @@ module Delayed
     def parse_time(time, timezone)
       case time
       when String
-        get_timezone(timezone).parse(time)
+        time_with_zone = get_timezone(timezone).parse(time)
+        parts = Date._parse(time, false)
+        wday = parts.fetch(:wday, time_with_zone.wday)
+        time_with_zone + (wday - time_with_zone.wday).days
       else
         time
       end
