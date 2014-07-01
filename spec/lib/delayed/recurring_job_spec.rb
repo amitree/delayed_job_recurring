@@ -25,8 +25,14 @@ class MyTaskThatFails < MyTask
 end
 
 class MyTaskWithZone < MyTask
+  run_at '5:00am'
   run_every 1.day
   timezone 'US/Pacific'
+  priority 0
+end
+
+class SubTaskWithZone < MyTaskWithZone
+  run_at '6:00am'
 end
 
 class MyTaskWithIVars < MyTask
@@ -42,6 +48,7 @@ end
 
 class MyTask1 < MyTask; end
 class MyTask2 < MyTask; end
+class MyTask3 < MyTask; end
 
 class MyTaskWithPriority < MyTask
   priority 2
@@ -234,6 +241,11 @@ describe Delayed::RecurringJob do
       MyTask2.run_at '1:00', '2:00'
       expect(MyTask2.run_at).to eq ['1:00', '2:00']
     end
+    it 'can be called multiple times' do
+      MyTask3.run_at '1:00'
+      MyTask3.run_at '2:00'
+      expect(MyTask2.run_at).to eq ['1:00', '2:00']
+    end
   end
 
   describe 'priority' do
@@ -276,6 +288,22 @@ describe Delayed::RecurringJob do
     it "behaves correctly for classes inside modules" do
       MyModule::MySubTask.schedule
       expect(MyModule::MySubTask.scheduled?).to eq true
+    end
+  end
+
+  describe 'inheritance' do
+    it "inherits properties of the parent class" do
+      expect(SubTaskWithZone.run_every).to eq 1.day
+      expect(SubTaskWithZone.timezone).to eq 'US/Pacific'
+      expect(SubTaskWithZone.priority).to eq 0
+    end
+
+    it "can override properties of the parent class" do
+      expect(SubTaskWithZone.run_at).to eq ['6:00am']
+    end
+
+    it "does not propagate overridden properties back to the parent" do
+      expect(MyTaskWithZone.run_at).to eq ['5:00am']
     end
   end
 end

@@ -113,6 +113,10 @@ module Delayed
         if times.length == 0
           @run_at || run_every.from_now
         else
+          if @run_at_inherited
+            @run_at = []
+            @run_at_inherited = nil
+          end
           @run_at ||= []
           @run_at.concat times
         end
@@ -166,6 +170,14 @@ module Delayed
 
       def scheduled?
         jobs.count > 0
+      end
+
+      def inherited(subclass)
+        %i(@run_at @run_interval @tz @priority).each do |var|
+          next unless instance_variable_defined? var
+          subclass.instance_variable_set var, self.instance_variable_get(var)
+          subclass.instance_variable_set "#{var}_inherited", true
+        end
       end
 
     end # ClassMethods
