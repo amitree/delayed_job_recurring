@@ -20,6 +20,7 @@ class MyTask
   run_every 1.day
   run_at '11:00am'
   timezone 'US/Pacific'
+  queue 'slow-jobs'
   def perform
     # Do some work here!
   end

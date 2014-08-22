@@ -33,10 +33,12 @@ module Delayed
         run_at: self.class.run_at,
         timezone: self.class.timezone,
         run_interval: serialize_duration(self.class.run_every),
-        priority: self.class.priority
+        priority: self.class.priority,
+        queue: self.class.queue
       )
 
       enqueue_opts = { priority: @schedule_options[:priority], run_at: next_run_time }
+      enqueue_opts[:queue] = @schedule_options[:queue] if @schedule_options[:queue]
 
       if Gem.loaded_specs['delayed_job'].version.to_s.first.to_i < 3
         Delayed::Job.enqueue self, enqueue_opts[:priority], enqueue_opts[:run_at]
@@ -143,6 +145,14 @@ module Delayed
           @priority
         else
           @priority = priority
+        end
+      end
+
+      def queue(*args)
+        if args.length == 0
+          @queue
+        else
+          @queue = args.first
         end
       end
 

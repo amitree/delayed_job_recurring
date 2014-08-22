@@ -54,6 +54,10 @@ class MyTaskWithPriority < MyTask
   priority 2
 end
 
+class MyTaskWithQueueName < MyTask
+  queue 'other-queue'
+end
+
 describe Delayed::RecurringJob do
   describe '#schedule' do
     context "when delayed job are disabled" do
@@ -261,6 +265,30 @@ describe Delayed::RecurringJob do
       jobs = Delayed::Job.all
       expect(jobs.count).to eq 1
       expect(jobs.first.priority).to eq 3
+    end
+  end
+
+  describe 'queue name' do
+    it 'can be set in the class' do
+      MyTaskWithQueueName.schedule!
+      jobs = Delayed::Job.all
+      expect(jobs.count).to eq 1
+      expect(jobs.first.queue).to eq 'other-queue'
+    end
+
+    it 'can be set in options' do
+      MyTaskWithQueueName.schedule!(queue: 'blarg')
+      jobs = Delayed::Job.all
+      expect(jobs.count).to eq 1
+      expect(jobs.first.queue).to eq 'blarg'
+    end
+
+    it 'uses the default queue if not specified' do
+      Delayed::Worker.default_queue_name = 'slow-jobs'
+      MyTask.schedule!
+      jobs = Delayed::Job.all
+      expect(jobs.count).to eq 1
+      expect(jobs.first.queue).to eq 'slow-jobs'
     end
   end
 
