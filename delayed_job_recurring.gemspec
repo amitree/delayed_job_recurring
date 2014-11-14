@@ -1,3 +1,5 @@
+require 'date'
+
 Gem::Specification.new do |s|
   s.name        = 'delayed_job_recurring'
   s.version     = '0.3.4'
@@ -11,7 +13,7 @@ Gem::Specification.new do |s|
   s.homepage    = 'https://github.com/amitree/delayed_job_recurring'
   s.license     = 'MIT'
 
-  s.required_ruby_version = '~> 2.0'
+  s.required_ruby_version = '> 1.9'
 
   s.add_development_dependency 'rails'
   s.add_development_dependency 'rspec', '3.0.0'
