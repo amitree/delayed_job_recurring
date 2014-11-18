@@ -1,7 +1,4 @@
-ENV["RAILS_ENV"] ||= 'test'
-require File.expand_path("../../config/environment", __FILE__)
-ActiveRecord::Tasks::DatabaseTasks.load_schema
-
+require 'support/db'
 require 'database_cleaner'
 require 'timecop'
 
