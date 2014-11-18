@@ -1,4 +1,5 @@
 # delayed\_job\_recurring
+[![Build Status](https://travis-ci.org/amitree/delayed_job_recurring.svg)](https://travis-ci.org/amitree/delayed_job_recurring)
 
 Extends delayed\_job to support recurring jobs.
 
