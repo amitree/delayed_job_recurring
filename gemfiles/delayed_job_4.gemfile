@@ -1,0 +1,5 @@
+source 'https://rubygems.org/'
+
+gem 'delayed_job', '~> 4.0'
+
+gemspec path: '..'
