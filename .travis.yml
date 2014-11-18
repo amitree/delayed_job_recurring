@@ -7,3 +7,6 @@ rvm:
 gemfile:
   - "gemfiles/delayed_job_3.gemfile"
   - "gemfiles/delayed_job_4.gemfile"
+matrix:
+  allow_failures:
+    - gemfile: "gemfiles/delayed_job_3.gemfile"
