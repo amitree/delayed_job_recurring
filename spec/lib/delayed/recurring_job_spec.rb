@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'delayed_job_recurring'
 
 class MyTask
   include ::Delayed::RecurringJob
