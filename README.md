@@ -31,7 +31,7 @@ end
 And schedule it. In a rails app, you might put this in an initializer:
 
 ```ruby
-MyTask.schedule! # run every day at 11am Pacific time (accounting for daylight savings)
+MyTask.schedule # run every day at 11am Pacific time (accounting for daylight savings)
 ```
 
 ## Advanced usage
