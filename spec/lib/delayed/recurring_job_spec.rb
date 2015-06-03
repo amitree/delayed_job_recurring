@@ -18,6 +18,15 @@ class MyTask
   end
 end
 
+class MyTas
+  include ::Delayed::RecurringJob
+
+  run_every 1.day
+
+  def perform
+  end
+end
+
 class MyTaskThatFails < MyTask
   run_every 1.day
   def perform
@@ -304,9 +313,9 @@ describe Delayed::RecurringJob do
     end
 
     it "returns false if a similarly-named but different job has been scheduled" do
-      task_class = Delayed::Task.schedule('MyTas', run_every: 10.minutes, run_at: 1.minute.from_now) { }
+      MyTas.schedule
       expect(MyTask.scheduled?).to eq false
-      expect(task_class.scheduled?).to eq true
+      expect(MyTas.scheduled?).to eq true
     end
 
     it "behaves correctly for classes with instance variables" do

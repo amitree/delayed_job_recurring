@@ -192,42 +192,4 @@ module Delayed
 
     end # ClassMethods
   end # RecurringJob
-
-  module Task
-    # Creates a new class wrapper around a block of code to be scheduled.
-    def self.new(name, options, &block)
-      task_class = Class.new
-      task_class.class_eval do
-        include Delayed::RecurringJob
-
-        def display_name
-          self.class.name
-        end
-
-        def perform
-          block.call
-        end
-      end
-
-      Object.const_set(name, task_class) if name
-      task_class.schedule(options)
-      return task_class
-    end
-
-    # Schedule a block of code on-the-fly.
-    # This is a friendly wrapper for using Task.new without an explicit constant assignment.
-    # Delayed::Task.schedule('MyNewTask', run_every: 10.minutes, run_at: 1.minute.from_now){do_some_stuff_here}
-    # or
-    # Delayed::Task.schedule(run_every: 10.minutes, run_at: 1.minute.from_now){do_some_stuff_here}
-    def self.schedule(name_or_options={}, options={}, &block)
-      case name_or_options
-      when Hash
-        name, options = nil, name_or_options
-      else
-        name = name_or_options
-      end
-
-      self.new name, options, &block
-    end
-  end  # Task
 end # Delayed
