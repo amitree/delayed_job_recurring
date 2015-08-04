@@ -68,6 +68,22 @@ class MyTaskWithQueueName < MyTask
   queue 'other-queue'
 end
 
+class MySelfSchedulingTask < MyTask
+  def perform
+    # Purpose of scheduling ourselves within the perform isn't a use case
+    # but simply a method of testing the case where our job is scheduled
+    # while we are processing an 'existing' job (of the same type).
+    #
+    # An example of such as case is (for ease of development/testing) having
+    # a recurring job scheduled in an initializer. Using a process manager,
+    # it is possible to have a situation where DJ spools up a previously
+    # scheduled job, then (possibly due to a longer load time) another process
+    # runs its initializer also scheduling up a new job. Then when the running
+    # job finishes, it schedules itself resulting in two of the same job in DJ
+    self.class.schedule!(run_at: Time.now + 1.second, timezone: 'US/Pacific')
+  end
+end
+
 describe Delayed::RecurringJob do
   describe '#schedule' do
     context "when delayed job are disabled" do
@@ -230,6 +246,21 @@ describe Delayed::RecurringJob do
           expect(job.attempts).to eq 1
           expect(job.run_at.to_datetime).to eq dt('2014-03-08T12:00:06') # delayed_job reschedules the job for (N**4 + 5) seconds in the future, N=1
         end
+      end
+    end
+
+    context 'additional scheduled jobs being created while our job is running' do
+      before do
+        at '2014-03-08T11:59:59' do
+          MySelfSchedulingTask.schedule(run_at: dt('2014-03-08T12:00:00'), timezone: 'US/Pacific')
+        end
+        at '2014-03-08T12:00:00' do
+          Delayed::Worker.new.work_off
+        end
+      end
+
+      it 'should not get scheduled more than once' do
+        expect(MySelfSchedulingTask.jobs.count).to eq 1
       end
     end
   end
