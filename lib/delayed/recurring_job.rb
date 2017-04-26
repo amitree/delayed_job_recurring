@@ -41,8 +41,8 @@ module Delayed
       enqueue_opts[:queue] = @schedule_options[:queue] if @schedule_options[:queue]
 
       Delayed::Job.transaction do
-        self.class.jobs.destroy_all
-
+        options = options.presence || @schedule_options
+        self.class.jobs(options).destroy_all
         if Gem.loaded_specs['delayed_job'].version.to_s.first.to_i < 3
           Delayed::Job.enqueue self, enqueue_opts[:priority], enqueue_opts[:run_at]
         else
@@ -161,29 +161,39 @@ module Delayed
       end
 
       # Show all jobs for this schedule
-      def jobs
-        ::Delayed::Job.where("(handler LIKE ?) OR (handler LIKE ?)", "--- !ruby/object:#{name} %", "--- !ruby/object:#{name}\n%")
+      def jobs(options = {})
+        options = options.with_indifferent_access
+
+        query = ["((handler LIKE ?) OR (handler LIKE ?))", "--- !ruby/object:#{name} %", "--- !ruby/object:#{name}\n%"]
+        if options[:job_matching_param].present?
+          matching_key = options[:job_matching_param]
+          matching_value = options[options[:job_matching_param]]
+          query[0] = "#{query[0]} AND handler LIKE ?"
+          query << "%#{matching_key}: #{matching_value}%"
+        end
+
+        ::Delayed::Job.where(query)
       end
 
       # Remove all jobs for this schedule (Stop the schedule)
-      def unschedule
-        jobs.each{|j| j.destroy}
+      def unschedule(options = {})
+        jobs(options).each{|j| j.destroy}
       end
 
       # Main interface to start this schedule (adds it to the jobs table).
       # Pass in a time to run the first job (nil runs the first job at run_interval from now).
       def schedule(options = {})
-        schedule!(options) unless scheduled?
+        schedule!(options) unless scheduled?(options)
       end
 
       def schedule!(options = {})
         return unless Delayed::Worker.delay_jobs
-        unschedule
+        unschedule(options)
         new.schedule!(options)
       end
 
-      def scheduled?
-        jobs.count > 0
+      def scheduled?(options = {})
+        jobs(options).count > 0
       end
 
       def inherited(subclass)
