@@ -164,10 +164,11 @@ module Delayed
       def jobs(options = {})
         options = options.with_indifferent_access
 
+        # Construct dynamic query with 'job_matching_param' if present
         query = ["((handler LIKE ?) OR (handler LIKE ?))", "--- !ruby/object:#{name} %", "--- !ruby/object:#{name}\n%"]
         if options[:job_matching_param].present?
           matching_key = options[:job_matching_param]
-          matching_value = options[options[:job_matching_param]]
+          matching_value = options[matching_key]
           query[0] = "#{query[0]} AND handler LIKE ?"
           query << "%#{matching_key}: #{matching_value}%"
         end
