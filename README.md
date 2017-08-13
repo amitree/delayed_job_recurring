@@ -64,7 +64,7 @@ To schedule multiple jobs with same class, pass an unique matching param `job_ma
 MyTask.schedule(run_at: '12:00', job_matching_param: 'schedule_id', schedule_id: 2)
 ```
 
-This allows you to schedule multiple jobs with same class if value of the unique matching param(which is `schedule_id` in above example is different in each job.
+This allows you to schedule multiple jobs with same class if value of the unique matching param(which is `schedule_id` in above example) is different in each job.
 
 ## Thanks!
 
