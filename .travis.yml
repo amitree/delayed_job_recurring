@@ -7,3 +7,7 @@ rvm:
 gemfile:
   - "gemfiles/delayed_job_3.gemfile"
   - "gemfiles/delayed_job_4.gemfile"
+before_install:
+  # Travis bundler versions are quite out of date and can cause install errors
+  # see: https://github.com/rubygems/rubygems/issues/1419
+  - "gem install bundler"
