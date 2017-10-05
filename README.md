@@ -28,11 +28,40 @@ class MyTask
 end
 ```
 
-And schedule it. In a rails app, you might put this in an initializer:
+Finally, schedule it:
 
 ```ruby
 MyTask.schedule! # run every day at 11am Pacific time (accounting for daylight savings)
 ```
+
+The best practice is to add your `MyTask.schedule!` lines to a rake file, e.g.
+
+```ruby
+# lib/tasks/recurring_jobs.rake
+
+namespace :recurring
+  task init: :environment do
+    MyTask.schedule!
+    MyOtherTask.schedule!
+
+    if Rails.env.production?
+      MyProductionOnlyTask.schedule!
+    end
+  end
+end
+```
+
+and invoke this job by running `rake recurring:init` on each deployment.
+
+Alternatively, if your app only has one instance running, you can put your
+`schedule!` calls into an initializer, and then your jobs will be automatically
+scheduled when your app starts. However, if you have more than one instance of
+your app running in production, this will lead to a race condition and you will
+end up with duplicate recurring jobs in the queue.
+
+## ActiveJob
+
+Note: your task class should **not** inherit from ActiveJob::Base.
 
 ## Advanced usage
 
