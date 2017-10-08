@@ -41,8 +41,7 @@ module Delayed
       enqueue_opts[:queue] = @schedule_options[:queue] if @schedule_options[:queue]
 
       Delayed::Job.transaction do
-        options = options.presence || @schedule_options
-        self.class.jobs(options).destroy_all
+        self.class.jobs(@schedule_options).destroy_all
         if Gem.loaded_specs['delayed_job'].version.to_s.first.to_i < 3
           Delayed::Job.enqueue self, enqueue_opts[:priority], enqueue_opts[:run_at]
         else
