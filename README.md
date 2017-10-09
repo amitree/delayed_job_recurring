@@ -83,6 +83,18 @@ MyTask.schedule(run_every: 1.day, run_at: ['11:00', '6:00pm']
 MyTask.schedule(run_every: 1.week, run_at: ['sunday 8:00am', 'wednesday 8:00am'])
 ```
 
+### Scheduling multiple jobs of same class
+
+By default, before scheduling a new job, the old jobs scheduled with the same class will be unscheduled. 
+
+To schedule multiple jobs with same class, pass an unique matching param `job_matching_param` and value for that matching param in each job as below:
+
+```ruby
+MyTask.schedule(run_at: '12:00', job_matching_param: 'schedule_id', schedule_id: 2)
+```
+
+This allows you to schedule multiple jobs with same class if value of the unique matching param(which is `schedule_id` in above example) is different in each job.
+
 ## Thanks!
 
 Many thanks to @ginjo and @kares for their work!  This code was derived from https://gist.github.com/ginjo/3688965.
