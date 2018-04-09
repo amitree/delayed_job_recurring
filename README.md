@@ -39,7 +39,7 @@ The best practice is to add your `MyTask.schedule!` lines to a rake file, e.g.
 ```ruby
 # lib/tasks/recurring_jobs.rake
 
-namespace :recurring
+namespace :recurring do
   task init: :environment do
     MyTask.schedule!
     MyOtherTask.schedule!
@@ -74,7 +74,7 @@ MyTask.schedule(run_at: '12:00')
 ### Running at multiples times each day
 
 ```ruby
-MyTask.schedule(run_every: 1.day, run_at: ['11:00', '6:00pm']
+MyTask.schedule(run_every: 1.day, run_at: ['11:00', '6:00pm'])
 ```
 
 ### Running on specific days of the week
@@ -85,7 +85,7 @@ MyTask.schedule(run_every: 1.week, run_at: ['sunday 8:00am', 'wednesday 8:00am']
 
 ### Scheduling multiple jobs of same class
 
-By default, before scheduling a new job, the old jobs scheduled with the same class will be unscheduled. 
+By default, before scheduling a new job, the old jobs scheduled with the same class will be unscheduled.
 
 To schedule multiple jobs with same class, pass an unique matching param `job_matching_param` and value for that matching param in each job as below:
 
