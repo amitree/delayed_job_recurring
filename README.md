@@ -74,7 +74,7 @@ MyTask.schedule(run_at: '12:00')
 ### Running at multiples times each day
 
 ```ruby
-MyTask.schedule(run_every: 1.day, run_at: ['11:00', '6:00pm']
+MyTask.schedule(run_every: 1.day, run_at: ['11:00', '6:00pm'])
 ```
 
 ### Running on specific days of the week
