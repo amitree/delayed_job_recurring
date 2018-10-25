@@ -168,8 +168,9 @@ module Delayed
         if options[:job_matching_param].present?
           matching_key = options[:job_matching_param]
           matching_value = options[matching_key]
+          matching_yaml = yaml_quote(matching_value)
           query[0] = "#{query[0]} AND handler LIKE ?"
-          query << "%#{matching_key}: #{matching_value}%"
+          query << "%#{matching_key}: #{matching_yaml}%"
         end
 
         ::Delayed::Job.where(query)
@@ -204,6 +205,14 @@ module Delayed
         end
       end
 
+    private
+      def yaml_quote(value)
+        # In order to ensure matching indentation, place the element inside a
+        # two-level hash (the first level mimicking 'schedule_options', the second
+        # for #{job_matching_param}), and strip out the leading "---\n:a:\n  :a: "
+        # but keep the trailing newline.
+        ({a: {a: value}}).to_yaml[14..-1]
+      end
     end # ClassMethods
   end # RecurringJob
 end # Delayed

@@ -263,6 +263,56 @@ describe Delayed::RecurringJob do
         expect(MySelfSchedulingTask.jobs.count).to eq 1
       end
     end
+
+    context 'with job_matching_param' do
+      context 'with integer values' do
+        before do
+          MyTask.schedule(run_at: '12:00', timezone: 'UTC', job_matching_param: 'schedule_id', schedule_id: 20)
+        end
+
+        it 'prevents duplicate jobs from being scheduled' do
+          MyTask.schedule(run_at: '12:00', timezone: 'UTC', job_matching_param: 'schedule_id', schedule_id: 20)
+          expect(Delayed::Job.count).to eq 1
+        end
+
+        it 'allows duplicate jobs with similar prefixes' do
+          MyTask.schedule(run_at: '12:00', timezone: 'UTC', job_matching_param: 'schedule_id', schedule_id: 2)
+          expect(Delayed::Job.count).to eq 2
+        end
+      end
+
+      context 'with string values' do
+        before do
+          MyTask.schedule(run_at: '12:00', timezone: 'UTC', job_matching_param: 'schedule_id', schedule_id: "foo\nbar")
+        end
+
+        it 'prevents duplicate jobs from being scheduled' do
+          MyTask.schedule(run_at: '12:00', timezone: 'UTC', job_matching_param: 'schedule_id', schedule_id: "foo\nbar")
+          expect(Delayed::Job.count).to eq 1
+        end
+
+        it 'allows duplicate jobs with similar prefixes' do
+          MyTask.schedule(run_at: '12:00', timezone: 'UTC', job_matching_param: 'schedule_id', schedule_id: "foo")
+          expect(Delayed::Job.count).to eq 2
+        end
+      end
+
+      context 'with object values' do
+        before do
+          MyTask.schedule(run_at: '12:00', timezone: 'UTC', job_matching_param: 'schedule_id', schedule_id: OpenStruct.new(foo: "foo\nbar"))
+        end
+
+        it 'prevents duplicate jobs from being scheduled' do
+          MyTask.schedule(run_at: '12:00', timezone: 'UTC', job_matching_param: 'schedule_id', schedule_id: OpenStruct.new(foo: "foo\nbar"))
+          expect(Delayed::Job.count).to eq 1
+        end
+
+        it 'allows non-duplicate jobs' do
+          MyTask.schedule(run_at: '12:00', timezone: 'UTC', job_matching_param: 'schedule_id', schedule_id: OpenStruct.new(foo: "foo"))
+          expect(Delayed::Job.count).to eq 2
+        end
+      end
+    end
   end
 
   describe '#schedule!' do
