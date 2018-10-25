@@ -98,3 +98,7 @@ This allows you to schedule multiple jobs with same class if value of the unique
 ## Thanks!
 
 Many thanks to @ginjo and @kares for their work!  This code was derived from https://gist.github.com/ginjo/3688965.
+
+## Contributing
+
+[![Open Source Helpers](https://www.codetriage.com/amitree/delayed_job_recurring/badges/users.svg)](https://www.codetriage.com/amitree/delayed_job_recurring)
