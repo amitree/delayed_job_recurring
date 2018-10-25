@@ -84,6 +84,12 @@ class MySelfSchedulingTask < MyTask
   end
 end
 
+class MyClass
+  def initialize(foo)
+    @foo = foo
+  end
+end
+
 describe Delayed::RecurringJob do
   describe '#schedule' do
     context "when delayed job are disabled" do
@@ -299,16 +305,16 @@ describe Delayed::RecurringJob do
 
       context 'with object values' do
         before do
-          MyTask.schedule(run_at: '12:00', timezone: 'UTC', job_matching_param: 'schedule_id', schedule_id: OpenStruct.new(foo: "foo\nbar"))
+          MyTask.schedule(run_at: '12:00', timezone: 'UTC', job_matching_param: 'schedule_id', schedule_id: MyClass.new("foo\nbar"))
         end
 
         it 'prevents duplicate jobs from being scheduled' do
-          MyTask.schedule(run_at: '12:00', timezone: 'UTC', job_matching_param: 'schedule_id', schedule_id: OpenStruct.new(foo: "foo\nbar"))
+          MyTask.schedule(run_at: '12:00', timezone: 'UTC', job_matching_param: 'schedule_id', schedule_id: MyClass.new("foo\nbar"))
           expect(Delayed::Job.count).to eq 1
         end
 
         it 'allows non-duplicate jobs' do
-          MyTask.schedule(run_at: '12:00', timezone: 'UTC', job_matching_param: 'schedule_id', schedule_id: OpenStruct.new(foo: "foo"))
+          MyTask.schedule(run_at: '12:00', timezone: 'UTC', job_matching_param: 'schedule_id', schedule_id: MyClass.new("foo"))
           expect(Delayed::Job.count).to eq 2
         end
       end
