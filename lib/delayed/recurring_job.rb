@@ -23,7 +23,7 @@ module Delayed
     end
 
     # Schedule this "repeating" job
-    def schedule!(options = {})
+    def schedule! options = {}
       options = options.dup
 
       if run_every = options.delete(:run_every)
@@ -57,13 +57,13 @@ module Delayed
 
       times = @schedule_options[:run_at]
       times = [times] unless times.is_a? Array
-      times = times.map { |time| parse_time(time, @schedule_options[:timezone]) }
-      times = times.map { |time| time.in_time_zone @schedule_options[:timezone] } if @schedule_options[:timezone]
+      times = times.map{|time| parse_time(time, @schedule_options[:timezone])}
+      times = times.map{|time| time.in_time_zone @schedule_options[:timezone]} if @schedule_options[:timezone]
 
       interval = deserialize_duration(@schedule_options[:run_interval])
 
       until next_time = next_future_time(times)
-        times.map! { |time| time + interval }
+        times.map!{ |time| time + interval }
       end
 
       # Update @schedule_options to avoid growing number of calculations each time
@@ -72,14 +72,13 @@ module Delayed
       next_time
     end
 
-    private
-
+  private
     # We don't want the run_interval to be serialized as a number of seconds.
     # 1.day is not the same as 86400 (not all days are 86400 seconds long!)
     def serialize_duration(duration)
       case duration
       when ActiveSupport::Duration
-        { value: duration.value, parts: duration.parts }
+        {value: duration.value, parts: duration.parts}
       else
         duration
       end
@@ -115,10 +114,11 @@ module Delayed
     end
 
     def next_future_time(times)
-      times.select { |time| time > Time.now }.min
+      times.select{|time| time > Time.now}.min
     end
 
     module ClassMethods
+
       def cron(cronline = false)
         return @cron if defined?(@cron) && cronline == false
         return (@cron = nil) if cronline.nil?
@@ -132,7 +132,7 @@ module Delayed
       end
 
       def run_at(*times)
-        if times.empty?
+        if times.length == 0
           @run_at || run_every.from_now
         else
           if @run_at_inherited
@@ -169,7 +169,7 @@ module Delayed
       end
 
       def queue(*args)
-        if args.empty?
+        if args.length == 0
           @queue
         else
           @queue = args.first
@@ -181,7 +181,7 @@ module Delayed
         options = options.with_indifferent_access
 
         # Construct dynamic query with 'job_matching_param' if present
-        query = ['((handler LIKE ?) OR (handler LIKE ?))', "--- !ruby/object:#{name} %", "--- !ruby/object:#{name}\n%"]
+        query = ["((handler LIKE ?) OR (handler LIKE ?))", "--- !ruby/object:#{name} %", "--- !ruby/object:#{name}\n%"]
         if options[:job_matching_param].present?
           matching_key = options[:job_matching_param]
           matching_value = options[matching_key]
@@ -195,7 +195,7 @@ module Delayed
 
       # Remove all jobs for this schedule (Stop the schedule)
       def unschedule(options = {})
-        jobs(options).each(&:destroy)
+        jobs(options).each{|j| j.destroy}
       end
 
       # Main interface to start this schedule (adds it to the jobs table).
@@ -206,7 +206,6 @@ module Delayed
 
       def schedule!(options = {})
         return unless Delayed::Worker.delay_jobs
-
         unschedule(options)
         new.schedule!(options)
       end
@@ -216,22 +215,20 @@ module Delayed
       end
 
       def inherited(subclass)
-        %i[@run_at @run_interval @tz @priority @cron].each do |var|
+        [:@run_at, :@run_interval, :@tz, :@priority, :@cron].each do |var|
           next unless instance_variable_defined? var
-
-          subclass.instance_variable_set var, instance_variable_get(var)
+          subclass.instance_variable_set var, self.instance_variable_get(var)
           subclass.instance_variable_set "#{var}_inherited", true
         end
       end
 
-      private
-
+    private
       def yaml_quote(value)
         # In order to ensure matching indentation, place the element inside a
         # two-level hash (the first level mimicking 'schedule_options', the second
         # for #{job_matching_param}), and strip out the leading "---\n:a:\n  :a: "
         # but keep the trailing newline.
-        { a: { a: value } }.to_yaml[14..-1]
+        ({a: {a: value}}).to_yaml[14..-1]
       end
     end # ClassMethods
   end # RecurringJob
