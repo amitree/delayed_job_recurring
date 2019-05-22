@@ -31,6 +31,7 @@ module Delayed
       end
 
       @schedule_options = options.reverse_merge(@schedule_options || {}).reverse_merge(
+        cron: self.class.cron,
         run_at: self.class.run_at,
         timezone: self.class.timezone,
         run_interval: serialize_duration(self.class.run_every),
@@ -52,7 +53,8 @@ module Delayed
     end
 
     def next_run_time
-      @cron.next_time if defined? @cron && @cron
+      return @schedule_options[:cron].next_time if @schedule_options[:cron].respond_to?(:next_time)
+
       times = @schedule_options[:run_at]
       times = [times] unless times.is_a? Array
       times = times.map{|time| parse_time(time, @schedule_options[:timezone])}
