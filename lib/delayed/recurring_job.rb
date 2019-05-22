@@ -213,7 +213,7 @@ module Delayed
       end
 
       def inherited(subclass)
-        [:@run_at, :@run_interval, :@tz, :@priority].each do |var|
+        [:@run_at, :@run_interval, :@tz, :@priority, :@cron].each do |var|
           next unless instance_variable_defined? var
           subclass.instance_variable_set var, self.instance_variable_get(var)
           subclass.instance_variable_set "#{var}_inherited", true
