@@ -6,6 +6,7 @@
 module Delayed
   module RecurringJob
     def self.included(base)
+      require 'fugit' unless defined?(Fugit)
       base.extend(ClassMethods)
       base.class_eval do
         @@logger = Delayed::Worker.logger
@@ -30,6 +31,7 @@ module Delayed
       end
 
       @schedule_options = options.reverse_merge(@schedule_options || {}).reverse_merge(
+        cron: self.class.cron,
         run_at: self.class.run_at,
         timezone: self.class.timezone,
         run_interval: serialize_duration(self.class.run_every),
@@ -51,6 +53,8 @@ module Delayed
     end
 
     def next_run_time
+      return @schedule_options[:cron].next_time.to_s if @schedule_options[:cron].respond_to?(:next_time)
+
       times = @schedule_options[:run_at]
       times = [times] unless times.is_a? Array
       times = times.map{|time| parse_time(time, @schedule_options[:timezone])}
@@ -114,6 +118,19 @@ module Delayed
     end
 
     module ClassMethods
+
+      def cron(cronline = false)
+        return @cron if defined?(@cron) && cronline == false
+        return (@cron = nil) if cronline.nil?
+
+        if cronline
+          @cron = Fugit.parse(cronline)
+          raise ArgumentError, 'Only cron and "natural language" syntax supported' unless @cron.is_a?(Fugit::Cron)
+        end
+
+        @cron
+      end
+
       def run_at(*times)
         if times.length == 0
           @run_at || run_every.from_now
@@ -198,7 +215,7 @@ module Delayed
       end
 
       def inherited(subclass)
-        [:@run_at, :@run_interval, :@tz, :@priority].each do |var|
+        [:@run_at, :@run_interval, :@tz, :@priority, :@cron].each do |var|
           next unless instance_variable_defined? var
           subclass.instance_variable_set var, self.instance_variable_get(var)
           subclass.instance_variable_set "#{var}_inherited", true
