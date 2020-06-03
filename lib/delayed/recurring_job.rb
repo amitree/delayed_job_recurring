@@ -23,13 +23,17 @@ module Delayed
 
     # Schedule this "repeating" job
     def schedule! options = {}
-      options = options.dup
+      options = options.dup.reverse_merge(@schedule_options || {})
+
+      if options[:new_instance] && !options.delete(:reentry)
+        return self.class.new.schedule! options.merge(reentry: true)
+      end
 
       if run_every = options.delete(:run_every)
         options[:run_interval] = serialize_duration(run_every)
       end
 
-      @schedule_options = options.reverse_merge(@schedule_options || {}).reverse_merge(
+      @schedule_options = options.reverse_merge(
         run_at: self.class.run_at,
         timezone: self.class.timezone,
         run_interval: serialize_duration(self.class.run_every),
@@ -190,7 +194,7 @@ module Delayed
       def schedule!(options = {})
         return unless Delayed::Worker.delay_jobs
         unschedule(options)
-        new.schedule!(options)
+        new.schedule!(options.merge(new_instance: true))
       end
 
       def scheduled?(options = {})

@@ -90,6 +90,22 @@ class MyClass
   end
 end
 
+class MyTaskWithState
+  include ::Delayed::RecurringJob
+
+  cattr_reader :count
+  run_every 1.day
+
+  def initialize
+    @count = 0
+  end
+
+  def perform
+    @count += 1
+    @@count = @count
+  end
+end
+
 describe Delayed::RecurringJob do
   describe '#schedule' do
     context "when delayed job are disabled" do
@@ -165,6 +181,40 @@ describe Delayed::RecurringJob do
           jobs = Delayed::Job.all
           expect(jobs.count).to eq 1
           expect(jobs.first.run_at.to_datetime).to eq dt('2014-03-09T10:00:00')                   
+        end
+      end
+    end
+
+    context 'instance variables' do
+      context 'when invoked via the schedule! class method' do
+        it 'creates a new instance each time it is rescheduled' do
+          at '2020-06-01T00:00:00' do
+            MyTaskWithState.schedule!
+          end
+          at '2020-06-02T00:00:00' do
+            Delayed::Worker.new.work_off
+          end
+          at '2020-06-03T00:00:00' do
+            Delayed::Worker.new.work_off
+          end
+          expect(MyTaskWithState.count).to eq 1
+        end
+      end
+
+      context 'when invoked via the schedule! instance method' do
+        it 'reschedules the same instance' do
+          task = MyTaskWithState.new
+          at '2020-06-01T00:00:00' do
+            task.schedule!
+          end
+          at '2020-06-02T00:00:00' do
+            Delayed::Worker.new.work_off
+          end
+          at '2020-06-03T00:00:00' do
+            Delayed::Worker.new.work_off
+          end
+          expect(task.count).to eq 2
+          expect(MyTaskWithState.count).to eq 2
         end
       end
     end
