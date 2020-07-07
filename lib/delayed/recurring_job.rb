@@ -41,8 +41,9 @@ module Delayed
         queue: self.class.queue
       )
 
-      enqueue_opts = { priority: @schedule_options[:priority], run_at: next_run_time }
-      enqueue_opts[:queue] = @schedule_options[:queue] if @schedule_options[:queue]
+      base_opts = {run_at: next_run_time}
+      filtered_schedule_options = @schedule_options.except(:run_at, :timezone, :run_interval)
+      enqueue_opts = base_opts.merge(filtered_schedule_options)
 
       Delayed::Job.transaction do
         self.class.jobs(@schedule_options).destroy_all
