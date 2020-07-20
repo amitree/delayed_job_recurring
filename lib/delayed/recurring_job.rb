@@ -88,6 +88,8 @@ module Delayed
       case serialized
       when Hash
         ActiveSupport::Duration.new(serialized[:value], serialized[:parts])
+      when /^P/
+        ActiveSupport::Duration.parse(serialized)
       else
         serialized
       end
